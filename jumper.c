@@ -29,18 +29,20 @@ int main(void) {
   int defaultXPos = (screenWidth-playerWidth)/2;
   Rectangle player = { defaultXPos, defaultYPos, 20, 40};
   EnemyRectangle *enemies[MAX_ENEMIES];
+  for (int i = 0; i < MAX_ENEMIES; i++) {
+    enemies[i] = NULL;
+  }
 
   bool playerJumping;
   float yRate = -220;  // px/sec
   float gravity = 250; //px/sec^2
   float secondsElapsed = 0;
   float score = 0.0;
-  char scoreStr[10];
+  char scoreStr[15];
 
   while (!WindowShouldClose()){
     BeginDrawing();
     ClearBackground(RAYWHITE);
-    
     switch(currentScreen){
       case GAMEPLAY: {
         
@@ -69,41 +71,44 @@ int main(void) {
 
         for (int i = 0; i < MAX_ENEMIES; i++) {
           if(enemies[i]){
+
             (*enemies[i]).x -= (*enemies[i]).speed;
-            if(player.x < (*enemies[i]).x ){
-              if(((*enemies[i]).x - player.x < player.width) && (player.y+player.height >=(*enemies[i]).y))
-                currentScreen = TITLE;
+            if(player.x < (*enemies[i]).x){
+              if(
+                ((*enemies[i]).x - player.x < player.width) &&
+                (player.y+player.height >= (*enemies[i]).y)
+              ) currentScreen = TITLE;
             }
-            else {
-              if((player.x - (*enemies[i]).x < (*enemies[i]).width) && (player.y+player.height >=(*enemies[i]).y))
-                currentScreen = TITLE;
-            }
-            Rectangle enemyRectangle = {(*enemies[i]).x, (*enemies[i]).y, (*enemies[i]).width, (*enemies[i]).height};
-            DrawRectangleRec(enemyRectangle, DARKGREEN);
+            else if (
+              (player.x - (*enemies[i]).x < (*enemies[i]).width) &&
+              (player.y+player.height >= (*enemies[i]).y)
+            ) currentScreen = TITLE;
+
             if((*enemies[i]).x < -100){
               free(enemies[i]);
               enemies[i] = NULL;
             }
+
           }
           else{
-            enemies[i] = malloc(sizeof(Rectangle));
+            enemies[i] = malloc(sizeof(EnemyRectangle));
             (*enemies[i]).x = 900;
             (*enemies[i]).y = 290;
             (*enemies[i]).width = (float)GetRandomValue(20, 50);
             (*enemies[i]).height = 30;
-            (*enemies[i]).speed = (((float)rand() / (float) RAND_MAX) * 6) + 1;
+            (*enemies[i]).speed = (( ((float) rand()) / (float) RAND_MAX)*6) + 1;
           }
         }
         score += 0.01;
-        sprintf(scoreStr, "%f", score);
+        sprintf(scoreStr, "Score: %d", (int) (score*100));
         DrawText(scoreStr, 640, 10, 20, RED);
       } break;
+      
       case TITLE: {
         DrawText("PRESS ENTER to play", 300, 100, 20, DARKGREEN);
-        if(score){
-          sprintf(scoreStr, "Score: %f", score);
+
+        if(score)
           DrawText(scoreStr, 350, 150, 20, RED);
-        }
         if (IsKeyPressed(KEY_ENTER)){
           score = 0.0;
           playerJumping = false;
@@ -119,6 +124,18 @@ int main(void) {
     }
     
     DrawRectangleRec(player, RED);
+
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+      if(enemies[i]){
+        Rectangle enemyRectangle = {
+          (*enemies[i]).x, 
+          (*enemies[i]).y, 
+          (*enemies[i]).width, 
+          (*enemies[i]).height
+        };
+        DrawRectangleRec(enemyRectangle, DARKGREEN);
+      }
+    }
     DrawRectangle(0, 320, 800, screenWidth - 320, DARKGRAY);
     EndDrawing();
   }

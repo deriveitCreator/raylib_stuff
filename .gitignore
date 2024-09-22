@@ -1,3 +1,5 @@
 a.exe
 2dCamera.c
 titleScreen.c
+2dCameraPlatformer.c
+mouseZoom.c
